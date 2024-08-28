@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.ericsson.nms</groupId>
+    <artifactId>integration</artifactId>
+    <version>15.2.0.35</version>
+  </parent>
+
+  <groupId>com.ericsson.aas.openstackqueuingsolution</groupId>
+  <artifactId>openstack-queuing-solution-smoketests</artifactId>
+  <version>2.10.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Openstack Queuing Solution Smoketests</name>
+
+  <properties>
+    <ericsson.scm.url>scm:git:[fetch=]ssh://gerritmirror-ha.lmera.ericsson.se:29418/OSS/com.ericsson.aas.openstackqueuingsolution/oqs-smoketests[push=]ssh://gerrit.ericsson.se:29418/OSS/com.ericsson.aas.openstackqueuingsolution/oqs-smoketests</ericsson.scm.url>
+  </properties>
+
+  <!--Profiles for site documentation-->
+  <profiles>
+    <!--Profile to deploy latest site-->
+    <profile>
+      <id>site_latest</id>
+      <distributionManagement>
+        <site>
+          <id>site</id>
+          <name>Site</name>
+          <url>${site.url}/oqs-smoketests/latest</url>
+        </site>
+      </distributionManagement>
+    </profile>
+    <!--Profile to stage site for review-->
+    <profile>
+      <id>site_review</id>
+      <distributionManagement>
+        <site>
+          <id>site</id>
+          <name>Site</name>
+          <url>${site.url}</url>
+        </site>
+      </distributionManagement>
+    </profile>
+  </profiles>
+
+  <!--Deployment of versioned documentation-->
+  <distributionManagement>
+    <site>
+      <id>site</id>
+      <name>Site</name>
+      <url>${site.url}/oqs-smoketests/${project.version}</url>
+    </site>
+  </distributionManagement>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>4.0.0-M1</version>
+      </plugin>
+    </plugins>
+  </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changelog-plugin</artifactId>
+        <version>2.3</version>
+        <reportSets>
+          <reportSet>
+            <id>dual-report</id>
+            <configuration>
+              <type>range</type>
+              <range>190</range>
+              <issueLinkUrl>https://jira-oss.seli.wh.rnd.internal.ericsson.com/browse/%ISSUE%</issueLinkUrl>
+            </configuration>
+            <reports>
+              <report>changelog</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+  <scm>
+    <developerConnection>${ericsson.scm.url}</developerConnection>
+    <connection>${ericsson.scm.url}</connection>
+    <tag>HEAD</tag>
+  </scm>
+</project>

@@ -1,0 +1,67 @@
+pipeline {
+  agent {
+    node {
+      label 'stratus_slave'
+    }
+  }
+  // The options directive is for configuration that applies to the whole job.
+  options {
+    buildDiscarder(logRotator(numToKeepStr:'20'))
+    timeout(time: 40, unit: 'MINUTES')
+    timestamps()
+  }
+  stages {
+    stage('Clean') {
+      steps {
+        sh '''
+        # Kill any running containers
+        running=$(docker ps -a -q| wc -l)
+        if [ "$running" -gt "0" ];then
+        echo "Killing containers"
+        docker rm -f $(docker ps -a -q)
+        fi
+        '''
+      }
+    }
+    stage('Verify Image Version') {
+      steps {
+        script {
+          sh '''
+          if (git log -1 | grep "\\[PATCH\\]"); then
+            echo 'Valid [PATCH] Version Found';
+          elif (git log -1 | grep "\\[MINOR\\]"); then
+            echo 'Valid [MINOR] Version Found';
+          elif (git log -1 | grep "\\[MAJOR\\]"); then
+            echo 'Valid [MAJOR] Version Found';
+          else
+            echo 'Pre-Code Review Failed. Commit message must contain one of the following: [PATCH]/[MINOR]/[MAJOR]'
+            exit 1
+          fi;
+          '''
+        }
+      }
+    }
+    stage('Tests') {
+      steps {
+        sh '''
+        chmod -R 777 .
+        ./preCodeReview.sh
+        '''
+      }
+    }
+  }
+  // The post build actions.
+  post {
+    success {
+      echo 'Pipeline Successfully Completed'
+    }
+    failure {
+      emailext(attachLog: true,
+               attachmentsPattern: 'currentBuild.rawBuild.log',
+               from: 'enmadm100@lmera.ericsson.se',
+               to: "${env.GERRIT_EVENT_ACCOUNT_EMAIL}",
+               subject: "Failed: Jenkins Job ${env.JOB_NAME}",
+               body: "Job: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nThe Job build URL: ${env.BUILD_URL}")
+    }
+  }
+}
